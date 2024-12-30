@@ -29802,6 +29802,11 @@ async function main() {
   });
   const markdown = await render(ctx, diagnostics);
   await send(ctx, markdown);
+  if (ctx.config.fail && diagnostics.error_count > 0) {
+    core2.setFailed(
+      `Exited as \`fail\` is set to \`true\` and ${diagnostics.error_count} errors were found`
+    );
+  }
 }
 main().then(() => console.log("Finished")).catch((error) => core2.setFailed(error instanceof Error ? error.message : `${error}`));
 // Annotate the CommonJS export names for ESM import in node:
