@@ -41,7 +41,7 @@ export async function render(ctx: CTX, diagnostics_store: DiagnosticStore) {
 	} else {
 		output.push(
 			`Found ${pl(diagnostics_store.error_count, 'error')} ` +
-				`and ${pl(diagnostics_store.error_count, 'warning')} ` +
+				`and ${pl(diagnostics_store.warning_count, 'warning')} ` +
 				`(${diagnostics_store.error_count + diagnostics_store.warning_count} total) ` +
 				(ctx.config.filter_changes ? ' with the files in this PR' : '') +
 				'.\n',
