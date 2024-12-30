@@ -84,6 +84,16 @@ async function main() {
 		}
 	}
 
+	console.log('debug', {
+		diagnostics,
+		changed_files,
+		ctx: {
+			...ctx,
+			octokit: '(hidden)',
+			token: '(hidden)',
+		},
+	});
+
 	const markdown = await render(ctx, diagnostics);
 
 	await send(ctx, markdown);
