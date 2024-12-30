@@ -29,13 +29,13 @@ function pretty_type(type: Diagnostic['type']) {
  */
 export async function render(ctx: CTX, diagnostics_store: DiagnosticStore) {
 	const blob_base = await get_blob_base(ctx);
-	const lines = ['# Svelte Check Results\n'];
+	const output = ['# Svelte Check Results\n'];
 	const now = new Date();
 
 	if (diagnostics_store.count == 0) {
-		lines.push('No issues found! 🎉');
+		output.push('No issues found! 🎉');
 	} else {
-		lines.push(
+		output.push(
 			`Found **${diagnostics_store.error_count}** errors ` +
 				`and **${diagnostics_store.warning_count}** warnings ` +
 				`(${diagnostics_store.error_count + diagnostics_store.warning_count} total) ` +
@@ -52,7 +52,7 @@ export async function render(ctx: CTX, diagnostics_store: DiagnosticStore) {
 				(d) => `#### [${readable_path}:${d.start.line}:${d.start.character}](${blob_base}${readable_path}#L${d.start.line}${d.start.line != d.end.line ? `-L${d.end.line}` : ''})\n\n\`\`\`ts\n${pretty_type(d.type)}: ${d.message}\n\n${lines.slice(d.start.line - 1, d.end.line).join('\n').trim()}\n\`\`\`\n`,
 			);
 
-			lines.push(
+			output.push(
 				// prettier-ignore
 				`\n\n<details>\n<summary>${readable_path}</summary>\n\n${diagnostics_markdown.join('\n')}\n</details>`,
 			);
@@ -64,9 +64,9 @@ export async function render(ctx: CTX, diagnostics_store: DiagnosticStore) {
 	// 		`Found **${diagnostics_store.unfiltered_count}** issues ${changed_files ? 'with the files in this PR ' : ''}(${all_diagnostics.length} total)\n\n${markdown.trim()}`
 	// 	: 'No issues found! 🎉';
 
-	lines.push('\n---\n');
+	output.push('\n---\n');
 	// prettier-ignore
-	lines.push(`Last Updated: <span title="${now.toISOString()}">${format(now, 'do MMMM \'at\' HH:mm')}</span> (${get_latest_commit()})`)
+	output.push(`Last Updated: <span title="${now.toISOString()}">${format(now, 'do MMMM \'at\' HH:mm')}</span> (${get_latest_commit()})`)
 
-	return lines.join('\n');
+	return output.join('\n');
 }
