@@ -30,8 +30,8 @@ jobs:
         with:
           failOnError: true
           failOnWarning: true
-          # failFilter: |
-          #   test/src/routes/test/*.svelte
+          failFilter: |
+            test/src/routes/test/*.svelte
           paths: |
             ./test
             ./test2
