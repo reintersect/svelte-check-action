@@ -28086,7 +28086,7 @@ function get_ctx() {
   if (diagnostic_paths.length == 0) diagnostic_paths.push(repo_root);
   const filter_changes = core.getBooleanInput("filterChanges") ?? true;
   const fail = core.getBooleanInput("fail") ?? false;
-  const ctx = {
+  return {
     token,
     octokit,
     pr_number,
@@ -28099,12 +28099,6 @@ function get_ctx() {
       fail
     }
   };
-  print_debug_log(ctx);
-  return ctx;
-}
-function print_debug_log(ctx) {
-  const { token, octokit, ...rest } = ctx;
-  console.log("debug ctx", { ...rest, token: "(hidden)" });
 }
 
 // src/index.ts
@@ -29698,7 +29692,7 @@ async function render(ctx, diagnostics_store) {
   const blob_base = await get_blob_base(ctx);
   const lines = ["# Svelte Check Results\n"];
   const now = /* @__PURE__ */ new Date();
-  if (diagnostics_store.unfiltered_count == 0) {
+  if (diagnostics_store.count == 0) {
     lines.push("No issues found! \u{1F389}");
   } else {
     lines.push(
@@ -29738,11 +29732,12 @@ ${diagnostics_markdown.join("\n")}
 // src/index.ts
 var DiagnosticStore = class {
   store = /* @__PURE__ */ new Map();
-  unfiltered_count = 0;
   warning_count = 0;
   error_count = 0;
+  get count() {
+    return this.warning_count + this.error_count;
+  }
   add(diagnostic, filter) {
-    this.unfiltered_count++;
     if (filter && !filter.includes(diagnostic.path)) {
       return;
     }
@@ -29796,6 +29791,15 @@ async function main() {
       }
     }
   }
+  console.log("debug", {
+    diagnostics,
+    changed_files,
+    ctx: {
+      ...ctx,
+      octokit: "(hidden)",
+      token: "(hidden)"
+    }
+  });
   const markdown = await render(ctx, diagnostics);
   await send(ctx, markdown);
 }
