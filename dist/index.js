@@ -29690,17 +29690,17 @@ function pretty_type(type) {
 }
 async function render(ctx, diagnostics_store) {
   const blob_base = await get_blob_base(ctx);
-  const lines = ["# Svelte Check Results\n"];
+  const output = ["# Svelte Check Results\n"];
   const now = /* @__PURE__ */ new Date();
   if (diagnostics_store.count == 0) {
-    lines.push("No issues found! \u{1F389}");
+    output.push("No issues found! \u{1F389}");
   } else {
-    lines.push(
+    output.push(
       `Found **${diagnostics_store.error_count}** errors and **${diagnostics_store.warning_count}** warnings (${diagnostics_store.error_count + diagnostics_store.warning_count} total) ` + (ctx.config.filter_changes ? " with the files in this PR" : "") + ".\n"
     );
     for (const [path, diagnostics] of diagnostics_store.entries()) {
       const readable_path = path.replace(ctx.repo_root, "").replace(/^\/+/, "");
-      const lines2 = await (0, import_promises2.readFile)(path, "utf-8").then((c) => c.split("\n"));
+      const lines = await (0, import_promises2.readFile)(path, "utf-8").then((c) => c.split("\n"));
       const diagnostics_markdown = diagnostics.map(
         // prettier-ignore
         (d) => `#### [${readable_path}:${d.start.line}:${d.start.character}](${blob_base}${readable_path}#L${d.start.line}${d.start.line != d.end.line ? `-L${d.end.line}` : ""})
@@ -29708,11 +29708,11 @@ async function render(ctx, diagnostics_store) {
 \`\`\`ts
 ${pretty_type(d.type)}: ${d.message}
 
-${lines2.slice(d.start.line - 1, d.end.line).join("\n").trim()}
+${lines.slice(d.start.line - 1, d.end.line).join("\n").trim()}
 \`\`\`
 `
       );
-      lines2.push(
+      output.push(
         // prettier-ignore
         `
 
@@ -29724,9 +29724,9 @@ ${diagnostics_markdown.join("\n")}
       );
     }
   }
-  lines.push("\n---\n");
-  lines.push(`Last Updated: <span title="${now.toISOString()}">${format(now, "do MMMM 'at' HH:mm")}</span> (${get_latest_commit()})`);
-  return lines.join("\n");
+  output.push("\n---\n");
+  output.push(`Last Updated: <span title="${now.toISOString()}">${format(now, "do MMMM 'at' HH:mm")}</span> (${get_latest_commit()})`);
+  return output.join("\n");
 }
 
 // src/index.ts
