@@ -29586,6 +29586,9 @@ async function get_pr_files(ctx) {
   });
   return pr_files.map((file) => (0, import_node_path2.join)(ctx.repo_root, file.filename));
 }
+function fmt_path(path, ctx) {
+  return path.replace(ctx.repo_root, "").replace(/^\/+/, "");
+}
 
 // src/ctx.ts
 var github = __toESM(require_github());
@@ -31224,7 +31227,7 @@ async function render(ctx, diagnostics_store) {
       `Found ${pl(diagnostics_store.error_count, "error")} and ${pl(diagnostics_store.warning_count, "warning")} (${diagnostics_store.error_count + diagnostics_store.warning_count} total) ` + (ctx.config.filter_changes ? " with the files in this PR" : "") + ".\n"
     );
     for (const [path, diagnostics] of diagnostics_store.entries()) {
-      const readable_path = path.replace(ctx.repo_root, "").replace(/^\/+/, "");
+      const readable_path = fmt_path(path, ctx);
       const lines = await (0, import_promises2.readFile)(path, "utf-8").then((c) => c.split("\n"));
       const diagnostics_markdown = diagnostics.map(
         // prettier-ignore
@@ -31256,23 +31259,31 @@ ${diagnostics_markdown.join("\n")}
 
 // src/index.ts
 var DiagnosticStore = class {
+  constructor(ctx, changed_files) {
+    this.ctx = ctx;
+    this.changed_files = changed_files;
+  }
   store = /* @__PURE__ */ new Map();
   warning_count = 0;
   error_count = 0;
   get count() {
     return this.warning_count + this.error_count;
   }
-  add(diagnostic, filter) {
-    if (filter && !filter.includes(diagnostic.path)) {
+  filtered_error_count = 0;
+  filtered_warning_count = 0;
+  get filtered_count() {
+    return this.filtered_warning_count + this.filtered_error_count;
+  }
+  add(diagnostic) {
+    if (this.changed_files && !this.changed_files.includes(diagnostic.path)) {
       return;
     }
     const current = this.store.get(diagnostic.path) ?? [];
     current.push(diagnostic);
     this.store.set(diagnostic.path, current);
-    if (diagnostic.type == "error") {
-      this.error_count++;
-    } else {
-      this.warning_count++;
+    this[`${diagnostic.type}_count`]++;
+    if (this.ctx.config.fail_filter(fmt_path(diagnostic.path, this.ctx))) {
+      this[`filtered_${diagnostic.type}_count`]++;
     }
   }
   entries() {
@@ -31306,13 +31317,13 @@ async function send(ctx, body) {
 async function main() {
   const ctx = get_ctx();
   const changed_files = await get_pr_files(ctx);
-  const diagnostics = new DiagnosticStore();
+  const diagnostics = new DiagnosticStore(ctx, changed_files);
   for (const root_path of ctx.config.diagnostic_paths) {
     const has_changed_files = changed_files ? changed_files.some((pr_file) => is_subdir(root_path, pr_file)) : true;
     console.log(`${has_changed_files ? "checking" : "skipped"} "${root_path}"`);
     if (has_changed_files) {
       for (const diagnostic of await get_diagnostics(root_path)) {
-        diagnostics.add(diagnostic, changed_files);
+        diagnostics.add(diagnostic);
       }
     }
   }
@@ -31327,14 +31338,15 @@ async function main() {
   });
   const markdown = await render(ctx, diagnostics);
   await send(ctx, markdown);
-  const failed = ctx.config.fail_on_error && diagnostics.error_count || ctx.config.fail_on_warning && diagnostics.warning_count;
+  const failed = ctx.config.fail_on_error && diagnostics.filtered_error_count || ctx.config.fail_on_warning && diagnostics.filtered_warning_count;
   if (failed) {
-    let stringify2 = function(key, enabled) {
-      return `\`${key}\` is ${enabled ? "enabled" : "disabled"}`;
+    let stringify2 = function(key, enabled, count) {
+      return `\`${key}\` is ${enabled ? "enabled" : "disabled"} (${count} issue${count === 1 ? "" : "s"})`;
     };
     var stringify = stringify2;
     core2.setFailed(
-      `Failed with ${diagnostics.count} total issues. ${stringify2("failOnError", ctx.config.fail_on_error)} & ` + stringify2("failOnWarning", ctx.config.fail_on_warning)
+      `Failed with ${diagnostics.filtered_count} filtered issue${diagnostics.filtered_count === 1 ? "" : "s"} (${diagnostics.count} total). ${stringify2("failOnError", ctx.config.fail_on_error, diagnostics.filtered_error_count)} & ${stringify2("failOnWarning", ctx.config.fail_on_warning, diagnostics.filtered_warning_count)}. `
+      // `${ctx.config.fail_filter ? 'Failures filtered by path.' : ''}`,
     );
   }
 }
