@@ -7,13 +7,14 @@ import { render } from './render';
 export class DiagnosticStore {
 	public readonly store = new Map<string, Diagnostic[]>();
 
-	public unfiltered_count = 0;
 	public warning_count = 0;
 	public error_count = 0;
 
-	add(diagnostic: Diagnostic, filter: string[] | null) {
-		this.unfiltered_count++;
+	get count() {
+		return this.warning_count + this.error_count;
+	}
 
+	add(diagnostic: Diagnostic, filter: string[] | null) {
 		if (filter && !filter.includes(diagnostic.path)) {
 			return;
 		}

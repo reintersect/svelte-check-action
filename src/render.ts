@@ -32,7 +32,7 @@ export async function render(ctx: CTX, diagnostics_store: DiagnosticStore) {
 	const lines = ['# Svelte Check Results\n'];
 	const now = new Date();
 
-	if (diagnostics_store.unfiltered_count == 0) {
+	if (diagnostics_store.count == 0) {
 		lines.push('No issues found! 🎉');
 	} else {
 		lines.push(
