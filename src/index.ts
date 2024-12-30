@@ -99,9 +99,11 @@ async function main() {
 
 	await send(ctx, markdown);
 
-	// if (fail_on_error && diagnostic_count > 0) {
-	// 	core.setFailed('Exited as failOnError is true, and errors were found');
-	// }
+	if (ctx.config.fail && diagnostics.error_count > 0) {
+		core.setFailed(
+			`Exited as \`fail\` is set to \`true\` and ${diagnostics.error_count} errors were found`,
+		);
+	}
 }
 
 main()
