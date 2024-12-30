@@ -59,11 +59,6 @@ export async function render(ctx: CTX, diagnostics_store: DiagnosticStore) {
 		}
 	}
 
-	// const main_content = diagnostics_store.unfiltered_count > 0
-	// 	? // prettier-ignore
-	// 		`Found **${diagnostics_store.unfiltered_count}** issues ${changed_files ? 'with the files in this PR ' : ''}(${all_diagnostics.length} total)\n\n${markdown.trim()}`
-	// 	: 'No issues found! 🎉';
-
 	output.push('\n---\n');
 	// prettier-ignore
 	output.push(`Last Updated: <span title="${now.toISOString()}">${format(now, 'do MMMM \'at\' HH:mm')}</span> (${get_latest_commit()})`)
