@@ -77,7 +77,7 @@ export function get_ctx(): CTX {
 	const filter_changes = core.getBooleanInput('filterChanges') ?? true;
 	const fail = core.getBooleanInput('fail') ?? false;
 
-	const ctx: CTX = {
+	return {
 		token,
 		octokit,
 		pr_number,
@@ -90,13 +90,4 @@ export function get_ctx(): CTX {
 			fail,
 		},
 	};
-
-	print_debug_log(ctx);
-
-	return ctx;
-}
-
-function print_debug_log(ctx: CTX) {
-	const { token, octokit, ...rest } = ctx;
-	console.log('debug ctx', { ...rest, token: '(hidden)' });
 }
