@@ -19759,22 +19759,22 @@ Support boolean input list: \`true | True | TRUE | false | False | FALSE\``);
       process.stdout.write(message2 + os.EOL);
     }
     exports2.info = info;
-    function startGroup(name) {
+    function startGroup3(name) {
       (0, command_1.issue)("group", name);
     }
-    exports2.startGroup = startGroup;
-    function endGroup() {
+    exports2.startGroup = startGroup3;
+    function endGroup3() {
       (0, command_1.issue)("endgroup");
     }
-    exports2.endGroup = endGroup;
+    exports2.endGroup = endGroup3;
     function group(name, fn) {
       return __awaiter(this, void 0, void 0, function* () {
-        startGroup(name);
+        startGroup3(name);
         let result;
         try {
           result = yield fn();
         } finally {
-          endGroup();
+          endGroup3();
         }
         return result;
       });
@@ -25450,6 +25450,7 @@ module.exports = __toCommonJS(index_exports);
 // src/diagnostic.ts
 var import_promises = require("fs/promises");
 var import_core = __toESM(require_core());
+var core = __toESM(require_core());
 var import_node_fs = require("fs");
 var import_node_path = require("path");
 
@@ -29623,7 +29624,11 @@ async function get_diagnostics(cwd) {
           path: (0, import_node_path.join)(cwd, filename)
         });
       } catch (e) {
-        console.error("failed to parse diagnostic");
+        core.startGroup("failed to parse a diagnostic");
+        console.error(`cwd: "${cwd}"`);
+        console.error(`line: "${line}"`);
+        console.error(`error: `, e instanceof z.ZodError ? e.format() : e instanceof Error ? `"${e.message}"` : `"${e}"`);
+        core.endGroup();
       }
     }
   }
@@ -29676,11 +29681,11 @@ function fmt_path(path, ctx) {
 
 // src/ctx.ts
 var github = __toESM(require_github());
-var core = __toESM(require_core());
+var core2 = __toESM(require_core());
 var import_picomatch = __toESM(require_picomatch2());
 var import_node_path3 = require("path");
 function get_ctx() {
-  const token = core.getInput("token") || process.env.GITHUB_TOKEN;
+  const token = core2.getInput("token") || process.env.GITHUB_TOKEN;
   if (!token) {
     throw new Error(
       "Unable to find a GitHub token. Please set the `token` option if required."
@@ -29691,12 +29696,12 @@ function get_ctx() {
   if (!repo_root) throw new Error("Missing GITHUB_WORKSPACE environment variable");
   const pr_number = github.context.payload.pull_request?.number;
   if (!pr_number) throw new Error("Can't find a pull request, are you running this on a pr?");
-  const diagnostic_paths = core.getMultilineInput("paths").map((path) => (0, import_node_path3.join)(repo_root, path));
+  const diagnostic_paths = core2.getMultilineInput("paths").map((path) => (0, import_node_path3.join)(repo_root, path));
   if (diagnostic_paths.length == 0) diagnostic_paths.push(repo_root);
-  const filter_changes = core.getBooleanInput("filterChanges");
-  const fail_filter = (0, import_picomatch.default)(core.getMultilineInput("failFilter"));
-  const fail_on_warning = core.getBooleanInput("failOnWarning");
-  const fail_on_error = core.getBooleanInput("failOnError");
+  const filter_changes = core2.getBooleanInput("filterChanges");
+  const fail_filter = (0, import_picomatch.default)(core2.getMultilineInput("failFilter"));
+  const fail_on_warning = core2.getBooleanInput("failOnWarning");
+  const fail_on_error = core2.getBooleanInput("failOnError");
   return {
     token,
     octokit,
@@ -29715,7 +29720,7 @@ function get_ctx() {
 }
 
 // src/index.ts
-var core2 = __toESM(require_core());
+var core3 = __toESM(require_core());
 
 // src/render.ts
 var import_node_child_process2 = require("child_process");
@@ -31415,18 +31420,26 @@ async function main() {
       }
     }
   }
-  console.log("debug", {
-    diagnostics,
-    changed_files,
+  core3.startGroup("Debug information");
+  console.log({
     ctx: {
       ...ctx,
       octokit: "(hidden)",
       token: "(hidden)"
-    }
+    },
+    diagnostics: {
+      store: diagnostics.store,
+      warning_count: diagnostics.warning_count,
+      error_count: diagnostics.error_count,
+      filtered_error_count: diagnostics.filtered_error_count,
+      filtered_warning_count: diagnostics.filtered_warning_count
+    },
+    changed_files
   });
+  core3.endGroup();
   for (const [path, diags] of diagnostics.entries()) {
     for (const diagnostic of diags) {
-      core2[diagnostic.type](diagnostic.message, {
+      core3[diagnostic.type](diagnostic.message, {
         title: "svelte-check",
         file: path,
         startLine: diagnostic.start.line,
@@ -31444,13 +31457,13 @@ async function main() {
       return `\`${key}\` is ${enabled ? "enabled" : "disabled"} (${count} issue${count === 1 ? "" : "s"})`;
     };
     var stringify = stringify2;
-    core2.setFailed(
+    core3.setFailed(
       `Failed with ${diagnostics.filtered_count} filtered issue${diagnostics.filtered_count === 1 ? "" : "s"} (${diagnostics.count} total). ${stringify2("failOnError", ctx.config.fail_on_error, diagnostics.filtered_error_count)} & ${stringify2("failOnWarning", ctx.config.fail_on_warning, diagnostics.filtered_warning_count)}. `
       // `${ctx.config.fail_filter ? 'Failures filtered by path.' : ''}`,
     );
   }
 }
-main().then(() => console.log("Finished")).catch((error) => core2.setFailed(error instanceof Error ? error.message : `${error}`));
+main().then(() => console.log("Finished")).catch((error) => core3.setFailed(error instanceof Error ? error.message : `${error}`));
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   DiagnosticStore

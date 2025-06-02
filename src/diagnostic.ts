@@ -4,6 +4,7 @@
 
 import { readFile } from 'node:fs/promises';
 import { setFailed } from '@actions/core';
+import * as core from '@actions/core';
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 import exec from 'nanoexec';
@@ -74,7 +75,12 @@ export async function get_diagnostics(cwd: string) {
 					path: join(cwd, filename),
 				});
 			} catch (e) {
-				console.error('failed to parse diagnostic');
+				core.startGroup('failed to parse a diagnostic');
+				console.error(`cwd: "${cwd}"`);
+				console.error(`line: "${line}"`);
+				// prettier-ignore
+				console.error(`error: `, e instanceof z.ZodError ? e.format() : e instanceof Error ? `"${e.message}"` : `"${e}"`);
+				core.endGroup();
 			}
 		}
 	}

@@ -104,15 +104,23 @@ async function main() {
 		}
 	}
 
-	console.log('debug', {
-		diagnostics,
-		changed_files,
+	core.startGroup('Debug information');
+	console.log({
 		ctx: {
 			...ctx,
 			octokit: '(hidden)',
 			token: '(hidden)',
 		},
+		diagnostics: {
+			store: diagnostics.store,
+			warning_count: diagnostics.warning_count,
+			error_count: diagnostics.error_count,
+			filtered_error_count: diagnostics.filtered_error_count,
+			filtered_warning_count: diagnostics.filtered_warning_count,
+		},
+		changed_files,
 	});
+	core.endGroup();
 
 	// Send the GitHub workflow annotations
 	for (const [path, diags] of diagnostics.entries()) {
