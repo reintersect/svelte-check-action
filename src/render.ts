@@ -23,11 +23,6 @@ function get_latest_commit() {
 function pretty_type(type: Diagnostic['type']) {
 	return type == 'error' ? 'Error' : 'Warn';
 }
-
-function pl(num: number, word: string) {
-	return `**${num}** ${word}${num == 1 ? '' : 's'}`;
-}
-
 /**
  * Render number + word taking into account simple plural
  */
