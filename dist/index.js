@@ -29601,7 +29601,7 @@ var diagnosticSchema = z.object({
 });
 async function get_diagnostics(cwd) {
   await try_run_svelte_kit_sync(cwd);
-  const result = await dist_default2("npx", ["-y", "svelte-check", "--output=machine-verbose"], {
+  const result = await dist_default2("npx", ["-y", "svelte-check@4", "--output=machine-verbose"], {
     shell: true,
     cwd
   });
@@ -31420,6 +31420,18 @@ async function main() {
       token: "(hidden)"
     }
   });
+  for (const [path, diags] of diagnostics.entries()) {
+    for (const diagnostic of diags) {
+      core2[diagnostic.type](diagnostic.message, {
+        title: "svelte-check",
+        file: path,
+        startLine: diagnostic.start.line,
+        endLine: diagnostic.end.line,
+        startColumn: diagnostic.start.character,
+        endColumn: diagnostic.end.character
+      });
+    }
+  }
   const markdown = await render(ctx, diagnostics);
   await send(ctx, markdown);
   const failed = ctx.config.fail_on_error && diagnostics.filtered_error_count || ctx.config.fail_on_warning && diagnostics.filtered_warning_count;

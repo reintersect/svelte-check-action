@@ -1,6 +1,6 @@
 # Svelte Check Action
 
-This action runs [svelte-check](http://npmjs.com/svelte-check) on the files that change in a PR (by default), then adds a comment which reports any errors in those files. The inspiration came from wanting to have svelte-check run in CI without failing, so that we can progressively fix a codebase with a lot of issues.
+This action runs [svelte-check](http://npmjs.com/svelte-check) on the files that change in a PR (by default), then adds a comment and annotation which reports any errors in those files. The inspiration came from wanting to have svelte-check run in CI without failing, so that we can progressively fix a codebase with a lot of issues.
 
 Works with svelte-check version 3 & 4. The action runs using Node 20.
 

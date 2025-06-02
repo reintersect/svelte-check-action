@@ -114,8 +114,21 @@ async function main() {
 		},
 	});
 
-	const markdown = await render(ctx, diagnostics);
+	// Send the GitHub workflow annotations
+	for (const [path, diags] of diagnostics.entries()) {
+		for (const diagnostic of diags) {
+			core[diagnostic.type](diagnostic.message, {
+				title: 'svelte-check',
+				file: path,
+				startLine: diagnostic.start.line,
+				endLine: diagnostic.end.line,
+				startColumn: diagnostic.start.character,
+				endColumn: diagnostic.end.character,
+			});
+		}
+	}
 
+	const markdown = await render(ctx, diagnostics);
 	await send(ctx, markdown);
 
 	const failed =
