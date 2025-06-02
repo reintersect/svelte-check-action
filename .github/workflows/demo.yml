@@ -27,5 +27,3 @@ jobs:
         uses: ghostdevv/svelte-check-action@main
         with:
           paths: ./test
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
