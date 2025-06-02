@@ -62,26 +62,29 @@ export async function get_diagnostics(cwd: string) {
 	const diagnostics: Diagnostic[] = [];
 
 	for (const line of result.stdout.toString().split('\n')) {
-		const result = line.trim().match(/^\d+\s(?<diagnostic>.*)$/);
+		const tail = line.trim().slice(line.indexOf(' ') + 1);
 
-		if (result && result.groups) {
-			try {
-				const raw = JSON.parse(result.groups.diagnostic);
-				const { filename, ...diagnostic } = diagnosticSchema.parse(raw);
+		if (tail.length === 0 || tail.startsWith('START') || tail.startsWith('COMPLETED')) {
+			// We don't need empty lines, or the start/end lines
+			continue;
+		}
 
-				diagnostics.push({
-					...diagnostic,
-					fileName: filename,
-					path: join(cwd, filename),
-				});
-			} catch (e) {
-				core.startGroup('failed to parse a diagnostic');
-				console.error(`cwd: "${cwd}"`);
-				console.error(`line: "${line}"`);
-				// prettier-ignore
-				console.error(`error: `, e instanceof z.ZodError ? e.format() : e instanceof Error ? `"${e.message}"` : `"${e}"`);
-				core.endGroup();
-			}
+		try {
+			const raw = JSON.parse(tail);
+			const { filename, ...diagnostic } = diagnosticSchema.parse(raw);
+
+			diagnostics.push({
+				...diagnostic,
+				fileName: filename,
+				path: join(cwd, filename),
+			});
+		} catch (e) {
+			core.startGroup('failed to parse a diagnostic');
+			console.error(`cwd: "${cwd}"`);
+			console.error(`line: "${line}"`);
+			// prettier-ignore
+			console.error(`error: `, e instanceof z.ZodError ? e.format() : e instanceof Error ? `"${e.message}"` : `"${e}"`);
+			core.endGroup();
 		}
 	}
 
