@@ -29613,23 +29613,24 @@ async function get_diagnostics(cwd) {
   }
   const diagnostics = [];
   for (const line of result.stdout.toString().split("\n")) {
-    const result2 = line.trim().match(/^\d+\s(?<diagnostic>.*)$/);
-    if (result2 && result2.groups) {
-      try {
-        const raw = JSON.parse(result2.groups.diagnostic);
-        const { filename, ...diagnostic } = diagnosticSchema.parse(raw);
-        diagnostics.push({
-          ...diagnostic,
-          fileName: filename,
-          path: (0, import_node_path.join)(cwd, filename)
-        });
-      } catch (e) {
-        core.startGroup("failed to parse a diagnostic");
-        console.error(`cwd: "${cwd}"`);
-        console.error(`line: "${line}"`);
-        console.error(`error: `, e instanceof z.ZodError ? e.format() : e instanceof Error ? `"${e.message}"` : `"${e}"`);
-        core.endGroup();
-      }
+    const tail = line.trim().slice(line.indexOf(" ") + 1);
+    if (tail.length === 0 || tail.startsWith("START") || tail.startsWith("COMPLETED")) {
+      continue;
+    }
+    try {
+      const raw = JSON.parse(tail);
+      const { filename, ...diagnostic } = diagnosticSchema.parse(raw);
+      diagnostics.push({
+        ...diagnostic,
+        fileName: filename,
+        path: (0, import_node_path.join)(cwd, filename)
+      });
+    } catch (e) {
+      core.startGroup("failed to parse a diagnostic");
+      console.error(`cwd: "${cwd}"`);
+      console.error(`line: "${line}"`);
+      console.error(`error: `, e instanceof z.ZodError ? e.format() : e instanceof Error ? `"${e.message}"` : `"${e}"`);
+      core.endGroup();
     }
   }
   return diagnostics;
