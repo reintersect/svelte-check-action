@@ -31422,13 +31422,19 @@ async function main() {
   }
   core3.startGroup("Debug information");
   console.log({
-    diagnostics,
-    changed_files,
     ctx: {
       ...ctx,
       octokit: "(hidden)",
       token: "(hidden)"
-    }
+    },
+    diagnostics: {
+      store: diagnostics.store,
+      warning_count: diagnostics.warning_count,
+      error_count: diagnostics.error_count,
+      filtered_error_count: diagnostics.filtered_error_count,
+      filtered_warning_count: diagnostics.filtered_warning_count
+    },
+    changed_files
   });
   core3.endGroup();
   for (const [path, diags] of diagnostics.entries()) {
