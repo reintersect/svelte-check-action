@@ -104,7 +104,8 @@ async function main() {
 		}
 	}
 
-	console.log('debug', {
+	core.startGroup('Debug information');
+	console.log({
 		diagnostics,
 		changed_files,
 		ctx: {
@@ -113,6 +114,7 @@ async function main() {
 			token: '(hidden)',
 		},
 	});
+	core.endGroup();
 
 	// Send the GitHub workflow annotations
 	for (const [path, diags] of diagnostics.entries()) {
