@@ -82,6 +82,12 @@ export function get_ctx(): CTX {
 		);
 	}
 
+	if (process.env.GITHUB_TOKEN) {
+		core.warning(
+			'Support for the GITHUB_TOKEN environment variable will be removed in the next major version of ghostdevv/svelte-check-action',
+		);
+	}
+
 	const octokit = github.getOctokit(token);
 
 	const repo_root = process.env.GITHUB_WORKSPACE;

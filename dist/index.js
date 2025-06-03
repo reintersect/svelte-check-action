@@ -19747,10 +19747,10 @@ Support boolean input list: \`true | True | TRUE | false | False | FALSE\``);
       (0, command_1.issueCommand)("error", (0, utils_1.toCommandProperties)(properties), message2 instanceof Error ? message2.toString() : message2);
     }
     exports2.error = error;
-    function warning(message2, properties = {}) {
+    function warning2(message2, properties = {}) {
       (0, command_1.issueCommand)("warning", (0, utils_1.toCommandProperties)(properties), message2 instanceof Error ? message2.toString() : message2);
     }
-    exports2.warning = warning;
+    exports2.warning = warning2;
     function notice(message2, properties = {}) {
       (0, command_1.issueCommand)("notice", (0, utils_1.toCommandProperties)(properties), message2 instanceof Error ? message2.toString() : message2);
     }
@@ -29690,6 +29690,11 @@ function get_ctx() {
   if (!token) {
     throw new Error(
       "Unable to find a GitHub token. Please set the `token` option if required."
+    );
+  }
+  if (process.env.GITHUB_TOKEN) {
+    core2.warning(
+      "Support for the GITHUB_TOKEN environment variable will be removed in the next major version of ghostdevv/svelte-check-action"
     );
   }
   const octokit = github.getOctokit(token);
