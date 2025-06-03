@@ -31,5 +31,3 @@ jobs:
           paths: |
             ./test
             ./test2
-        env:
-            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
