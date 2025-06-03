@@ -24,7 +24,8 @@ jobs:
         run: pnpm install
 
       - name: Run the action
-        uses: ghostdevv/svelte-check-action@test-pr
+        # uses: ghostdevv/svelte-check-action@test-pr
+        uses: ../../
         with:
           failOnError: false
           failOnWarning: false
