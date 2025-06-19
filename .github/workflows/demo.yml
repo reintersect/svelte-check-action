@@ -30,7 +30,7 @@ jobs:
               with:
                   failOnError: false
                   failOnWarning: false
-                  filterChanges: '!(test/src/routes/test*/**)'
+                  filterChanges: '!(test/src/routes/test/**)'
                   paths: |
                       ./test
                       ./test2
