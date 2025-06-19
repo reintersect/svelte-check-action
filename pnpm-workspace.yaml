@@ -1,7 +1,7 @@
 packages:
-  - '.'
-  - './test'
-  - './test2'
+    - '.'
+    - './test'
+    - './test2'
 onlyBuiltDependencies:
-  - '@sveltejs/kit'
-  - esbuild
+    - '@sveltejs/kit'
+    - esbuild

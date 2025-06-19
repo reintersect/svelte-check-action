@@ -6,7 +6,9 @@
 		".": "./dist/index.js"
 	},
 	"scripts": {
-		"build": "tsup src/index.ts --clean --format cjs"
+		"build": "tsup src/index.ts --clean --format cjs",
+		"format": "prettier --write .",
+		"test": "vitest"
 	},
 	"devDependencies": {
 		"@actions/core": "^1.11.1",
@@ -16,8 +18,10 @@
 		"date-fns": "^4.1.0",
 		"nanoexec": "^1.1.0",
 		"picomatch": "^4.0.2",
+		"prettier": "^3.4.2",
 		"tsup": "^8.3.5",
 		"typescript": "^5.7.2",
+		"vitest": "^3.2.4",
 		"zod": "^3.24.1"
 	},
 	"packageManager": "pnpm@10.11.1",

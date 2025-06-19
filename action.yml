@@ -12,7 +12,7 @@ inputs:
         required: false
         default: '.'
     filterChanges:
-        description: 'When true only the files that change (in the pull request) will be checked'
+        description: 'When enabled only the files that change in the pull request will be checked. If a list of globs is provided, we will only apply this filtering to files matching the globs'
         required: false
         default: 'true'
     failOnError:

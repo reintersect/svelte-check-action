@@ -1,35 +1,35 @@
 name: demo
 
 on:
-  - pull_request
-  - workflow_dispatch
+    - pull_request
+    - workflow_dispatch
 
 jobs:
-  demo:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+    demo:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
 
-      - name: Setup Node 20.19.2
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20.19.2
-          registry-url: https://registry.npmjs.org/
+            - name: Setup Node 20.19.2
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 20.19.2
+                  registry-url: https://registry.npmjs.org/
 
-      - name: Setup PNPM
-        uses: pnpm/action-setup@v4.1.0
+            - name: Setup PNPM
+              uses: pnpm/action-setup@v4.1.0
 
-      - name: Install
-        run: pnpm install
+            - name: Install
+              run: pnpm install
 
-      # For a full documented example please checkout the README.md
-      - name: svelte-check
-        # uses: ghostdevv/svelte-check-action@main
-        uses: ./
-        with:
-          failOnError: false
-          failOnWarning: false
-          paths: |
-            ./test
-            ./test2
+            # For a full documented example please checkout the README.md
+            - name: svelte-check
+              # uses: ghostdevv/svelte-check-action@main
+              uses: ./
+              with:
+                  failOnError: false
+                  failOnWarning: false
+                  paths: |
+                      ./test
+                      ./test2
