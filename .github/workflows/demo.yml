@@ -30,7 +30,6 @@ jobs:
               with:
                   failOnError: false
                   failOnWarning: false
-                  filterChanges: false
                   paths: |
                       ./test
                       ./test2
