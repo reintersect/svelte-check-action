@@ -29690,8 +29690,17 @@ var DiagnosticStore = class {
   get filtered_count() {
     return this.filtered_warning_count + this.filtered_error_count;
   }
+  should_skip(diagnostic) {
+    if (this.ctx.config.filter_changes === false || !this.changed_files) {
+      return false;
+    }
+    if (typeof this.ctx.config.filter_changes !== "boolean" && !this.ctx.config.filter_changes(fmt_path(diagnostic.path, this.ctx))) {
+      return false;
+    }
+    return !this.changed_files.includes(diagnostic.path);
+  }
   add(diagnostic) {
-    if (this.changed_files && !this.changed_files.includes(diagnostic.path)) {
+    if (this.should_skip(diagnostic)) {
       return;
     }
     const current = this.store.get(diagnostic.path) ?? [];
@@ -29704,6 +29713,9 @@ var DiagnosticStore = class {
   }
   entries() {
     return this.store.entries();
+  }
+  list() {
+    return Array.from(this.store.values()).flat();
   }
 };
 
@@ -29730,8 +29742,8 @@ function get_ctx() {
   const pr_number = github.context.payload.pull_request?.number;
   if (!pr_number) throw new Error("Can't find a pull request, are you running this on a pr?");
   const diagnostic_paths = core2.getMultilineInput("paths").map((path) => (0, import_node_path3.join)(repo_root, path));
-  if (diagnostic_paths.length == 0) diagnostic_paths.push(repo_root);
-  const filter_changes = core2.getBooleanInput("filterChanges");
+  if (!diagnostic_paths.length) diagnostic_paths.push(repo_root);
+  const filter_changes = get_boolean_or_picomatch_input("filterChanges", repo_root);
   const fail_filter = (0, import_picomatch.default)(core2.getMultilineInput("failFilter"));
   const fail_on_warning = core2.getBooleanInput("failOnWarning");
   const fail_on_error = core2.getBooleanInput("failOnError");
@@ -29750,6 +29762,13 @@ function get_ctx() {
       fail_filter
     }
   };
+}
+function get_boolean_or_picomatch_input(name, repo_root) {
+  try {
+    return core2.getBooleanInput(name);
+  } catch {
+    return (0, import_picomatch.default)(core2.getMultilineInput(name), { cwd: repo_root });
+  }
 }
 
 // src/index.ts
@@ -31460,7 +31479,6 @@ async function main() {
     var stringify = stringify2;
     core3.setFailed(
       `Failed with ${diagnostics.filtered_count} filtered issue${diagnostics.filtered_count === 1 ? "" : "s"} (${diagnostics.count} total). ${stringify2("failOnError", ctx.config.fail_on_error, diagnostics.filtered_error_count)} & ${stringify2("failOnWarning", ctx.config.fail_on_warning, diagnostics.filtered_warning_count)}. `
-      // `${ctx.config.fail_filter ? 'Failures filtered by path.' : ''}`,
     );
   }
 }

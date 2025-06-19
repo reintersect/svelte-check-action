@@ -46,14 +46,16 @@ and annotations to your changed files tab:
 
 ## Options
 
-| Option          | Description                                                                                                                                                                      | Default               |
-| --------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------- |
-| `paths`         | The folder(s) to run svelte-check in, one per line. `svelte-kit sync` will be ran before diagnostics if SvelteKit is found at the folder package.json.                           | `.`                   |
-| `filterChanges` | When true only the files that change (in the pull request) will be checked                                                                                                       | `true`                |
-| `failOnError`   | Should we cause CI to fail if there is a Svelte Check error?                                                                                                                     | `false`               |
-| `failOnWarning` | Should we cause CI to fail if there is a Svelte Check warning?                                                                                                                   | `false`               |
-| `failFilter`    | When failFilter is set and either failOnError or failOnWarning is enabled, the action will only fail for issues that occur in paths matching these globs.                        | Disabled              |
-| `token`         | The GitHub token used to authenticate with the GitHub API. By default, GitHub generates a token for the workflow run - which we use. You can provide your own token if you like. | `${{ github.token }}` |
+By default the action will only check files that are changed in the pull request (this is likely changing in the next major release). You can customise this behaviour by using the following options:
+
+| Option          | Description                                                                                                                                                                | Default               |
+| --------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------- |
+| `paths`         | The folder(s) to run `svelte-check` in, one per line. `svelte-kit sync` will be ran before diagnostics if SvelteKit is found at the folder package.json.                   | `.`                   |
+| `filterChanges` | When enabled only the files that change in the pull request will be checked. If a list of globs is provided, we will only apply this filtering to files matching the globs | `false`               |
+| `failOnError`   | Should the action fail if there is a svelte-check error?                                                                                                                   | `true`                |
+| `failOnWarning` | Should the action fail if there is a svelte-check warning?                                                                                                                 | `false`               |
+| `failFilter`    | When `failFilter` is set and either `failOnError` or `failOnWarning` is enabled, the action will only fail on files that match the filter.                                 | Disabled              |
+| `token`         | The GitHub token used to authenticate with the GitHub API. By default we use the unique token GitHub generates for each workflow run.                                      | `${{ github.token }}` |
 
 You can configure the action by passing the options under the `with` key, for example:
 

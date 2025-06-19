@@ -11,10 +11,10 @@ export interface Config {
 	diagnostic_paths: string[];
 
 	/**
-	 * When true only the files that change (in the pull request) will be checked
+	 * When enabled only the files that change in the pull request will be checked. If a list of globs is provided, we will only apply this filtering to files matching the globs.
 	 * @default true
 	 */
-	filter_changes: boolean;
+	filter_changes: boolean | picomatch.Matcher;
 
 	/**
 	 * Should we cause CI to fail if there is a Svelte Check error?
@@ -97,9 +97,9 @@ export function get_ctx(): CTX {
 	if (!pr_number) throw new Error("Can't find a pull request, are you running this on a pr?");
 
 	const diagnostic_paths = core.getMultilineInput('paths').map((path) => join(repo_root, path));
-	if (diagnostic_paths.length == 0) diagnostic_paths.push(repo_root);
+	if (!diagnostic_paths.length) diagnostic_paths.push(repo_root);
 
-	const filter_changes = core.getBooleanInput('filterChanges');
+	const filter_changes = get_boolean_or_picomatch_input('filterChanges', repo_root);
 
 	const fail_filter = picomatch(core.getMultilineInput('failFilter'));
 	const fail_on_warning = core.getBooleanInput('failOnWarning');
@@ -120,4 +120,15 @@ export function get_ctx(): CTX {
 			fail_filter,
 		},
 	};
+}
+
+function get_boolean_or_picomatch_input(
+	name: string,
+	repo_root: string,
+): boolean | picomatch.Matcher {
+	try {
+		return core.getBooleanInput(name);
+	} catch {
+		return picomatch(core.getMultilineInput(name), { cwd: repo_root });
+	}
 }

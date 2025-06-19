@@ -27,8 +27,30 @@ export class DiagnosticStore {
 		private readonly changed_files: string[] | null,
 	) {}
 
+	private should_skip(diagnostic: Diagnostic) {
+		// If filter_changes is false then we should never remove
+		// any diagnostics. changed_files should always be empty here
+		// regardless, since we only load changed_files if filter_changes is truthy
+		if (this.ctx.config.filter_changes === false || !this.changed_files) {
+			return false;
+		}
+
+		// If the provided filter_changes glob pattern doesn't match
+		// the diagnostic's path then we won't skip it
+		if (
+			typeof this.ctx.config.filter_changes !== 'boolean' &&
+			!this.ctx.config.filter_changes(fmt_path(diagnostic.path, this.ctx))
+		) {
+			return false;
+		}
+
+		// Now we know that we want to filter for changes, we can
+		// actually do that.
+		return !this.changed_files.includes(diagnostic.path);
+	}
+
 	add(diagnostic: Diagnostic) {
-		if (this.changed_files && !this.changed_files.includes(diagnostic.path)) {
+		if (this.should_skip(diagnostic)) {
 			return;
 		}
 
@@ -45,5 +67,9 @@ export class DiagnosticStore {
 
 	entries() {
 		return this.store.entries();
+	}
+
+	list() {
+		return Array.from(this.store.values()).flat();
 	}
 }

@@ -7,7 +7,8 @@
 	},
 	"scripts": {
 		"build": "tsup src/index.ts --clean --format cjs",
-		"format": "prettier --write ."
+		"format": "prettier --write .",
+		"test": "vitest"
 	},
 	"devDependencies": {
 		"@actions/core": "^1.11.1",
@@ -20,6 +21,7 @@
 		"prettier": "^3.4.2",
 		"tsup": "^8.3.5",
 		"typescript": "^5.7.2",
+		"vitest": "^3.2.4",
 		"zod": "^3.24.1"
 	},
 	"packageManager": "pnpm@10.11.1",

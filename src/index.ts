@@ -108,7 +108,6 @@ async function main() {
 				`(${diagnostics.count} total). ` +
 				`${stringify('failOnError', ctx.config.fail_on_error, diagnostics.filtered_error_count)} & ` +
 				`${stringify('failOnWarning', ctx.config.fail_on_warning, diagnostics.filtered_warning_count)}. `,
-			// `${ctx.config.fail_filter ? 'Failures filtered by path.' : ''}`,
 		);
 	}
 }
