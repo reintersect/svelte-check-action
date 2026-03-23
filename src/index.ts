@@ -45,17 +45,22 @@ async function main() {
 	const changed_files = await get_pr_files(ctx);
 	const diagnostics = new DiagnosticStore(ctx, changed_files);
 
-	for (const root_path of ctx.config.diagnostic_paths) {
+	const paths_to_check = ctx.config.diagnostic_paths.filter((root_path) => {
 		const has_changed_files = changed_files
 			? changed_files.some((pr_file) => is_subdir(root_path, pr_file))
 			: true;
 
 		console.log(`${has_changed_files ? 'checking' : 'skipped'} "${root_path}"`);
+		return has_changed_files;
+	});
 
-		if (has_changed_files) {
-			for (const diagnostic of await get_diagnostics(root_path)) {
-				diagnostics.add(diagnostic);
-			}
+	const results = await Promise.all(
+		paths_to_check.map((root_path) => get_diagnostics(root_path, ctx.use_pnpm)),
+	);
+
+	for (const result of results) {
+		for (const diagnostic of result) {
+			diagnostics.add(diagnostic);
 		}
 	}
 

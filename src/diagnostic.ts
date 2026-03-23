@@ -43,12 +43,17 @@ export interface Diagnostic extends Omit<RawDiagnostic, 'filename'> {
 /**
  * Run svelte-check at a given directory and return all the issues it finds
  * @param cwd The directory to run svelte-check in
+ * @param use_pnpm Whether to use pnpm exec instead of npx
  * @returns Diagnostics
  */
-export async function get_diagnostics(cwd: string) {
-	await try_run_svelte_kit_sync(cwd);
+export async function get_diagnostics(cwd: string, use_pnpm = false) {
+	await try_run_svelte_kit_sync(cwd, use_pnpm);
 
-	const result = await exec('npx', ['-y', 'svelte-check@4', '--output=machine-verbose'], {
+	const [cmd, args] = use_pnpm
+		? ['pnpm', ['exec', 'svelte-check', '--output=machine-verbose']]
+		: ['npx', ['-y', 'svelte-check@4', '--output=machine-verbose']];
+
+	const result = await exec(cmd, args, {
 		shell: true,
 		cwd,
 	});
@@ -91,7 +96,7 @@ export async function get_diagnostics(cwd: string) {
 	return diagnostics;
 }
 
-async function try_run_svelte_kit_sync(cwd: string) {
+async function try_run_svelte_kit_sync(cwd: string, use_pnpm: boolean) {
 	const pkg_path = join(cwd, 'package.json');
 	if (!existsSync(pkg_path)) return;
 
@@ -100,7 +105,11 @@ async function try_run_svelte_kit_sync(cwd: string) {
 	if (pkg.dependencies?.['@sveltejs/kit'] || pkg.devDependencies?.['@sveltejs/kit']) {
 		console.log(`running svelte-kit sync at "${cwd}"`);
 
-		const result = await exec('npx', ['-y', 'svelte-kit', 'sync'], { shell: true, cwd });
+		const [cmd, args] = use_pnpm
+			? ['pnpm', ['exec', 'svelte-kit', 'sync']]
+			: ['npx', ['-y', 'svelte-kit', 'sync']];
+
+		const result = await exec(cmd, args, { shell: true, cwd });
 
 		if (!result.ok) {
 			console.error('svelte-kit sync failed', {

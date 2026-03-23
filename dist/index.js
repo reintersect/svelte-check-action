@@ -29622,9 +29622,10 @@ var diagnosticSchema = z.object({
   code: z.union([z.number(), z.string()]).optional(),
   source: z.string().optional()
 });
-async function get_diagnostics(cwd) {
-  await try_run_svelte_kit_sync(cwd);
-  const result = await dist_default2("npx", ["-y", "svelte-check@4", "--output=machine-verbose"], {
+async function get_diagnostics(cwd, use_pnpm = false) {
+  await try_run_svelte_kit_sync(cwd, use_pnpm);
+  const [cmd, args] = use_pnpm ? ["pnpm", ["exec", "svelte-check", "--output=machine-verbose"]] : ["npx", ["-y", "svelte-check@4", "--output=machine-verbose"]];
+  const result = await dist_default2(cmd, args, {
     shell: true,
     cwd
   });
@@ -29657,13 +29658,14 @@ async function get_diagnostics(cwd) {
   }
   return diagnostics;
 }
-async function try_run_svelte_kit_sync(cwd) {
+async function try_run_svelte_kit_sync(cwd, use_pnpm) {
   const pkg_path = (0, import_node_path2.join)(cwd, "package.json");
   if (!(0, import_node_fs.existsSync)(pkg_path)) return;
   const pkg = JSON.parse(await (0, import_promises.readFile)(pkg_path, "utf-8"));
   if (pkg.dependencies?.["@sveltejs/kit"] || pkg.devDependencies?.["@sveltejs/kit"]) {
     console.log(`running svelte-kit sync at "${cwd}"`);
-    const result = await dist_default2("npx", ["-y", "svelte-kit", "sync"], { shell: true, cwd });
+    const [cmd, args] = use_pnpm ? ["pnpm", ["exec", "svelte-kit", "sync"]] : ["npx", ["-y", "svelte-kit", "sync"]];
+    const result = await dist_default2(cmd, args, { shell: true, cwd });
     if (!result.ok) {
       console.error("svelte-kit sync failed", {
         ...result,
@@ -29724,6 +29726,7 @@ var github = __toESM(require_github());
 var core2 = __toESM(require_core());
 var import_picomatch = __toESM(require_picomatch2());
 var import_node_path3 = require("path");
+var import_node_fs2 = require("fs");
 function get_ctx() {
   const token = core2.getInput("token") || process.env.GITHUB_TOKEN;
   if (!token) {
@@ -29747,11 +29750,16 @@ function get_ctx() {
   const fail_filter = (0, import_picomatch.default)(core2.getMultilineInput("failFilter"));
   const fail_on_warning = core2.getBooleanInput("failOnWarning");
   const fail_on_error = core2.getBooleanInput("failOnError");
+  const use_pnpm = (0, import_node_fs2.existsSync)((0, import_node_path3.join)(repo_root, "pnpm-lock.yaml"));
+  if (use_pnpm) {
+    console.log("Detected pnpm-lock.yaml, using pnpm exec for commands");
+  }
   return {
     token,
     octokit,
     pr_number,
     repo_root,
+    use_pnpm,
     repo: github.context.repo.repo,
     owner: github.context.repo.owner,
     config: {
@@ -31431,13 +31439,17 @@ async function main() {
   const ctx = get_ctx();
   const changed_files = await get_pr_files(ctx);
   const diagnostics = new DiagnosticStore(ctx, changed_files);
-  for (const root_path of ctx.config.diagnostic_paths) {
+  const paths_to_check = ctx.config.diagnostic_paths.filter((root_path) => {
     const has_changed_files = changed_files ? changed_files.some((pr_file) => is_subdir(root_path, pr_file)) : true;
     console.log(`${has_changed_files ? "checking" : "skipped"} "${root_path}"`);
-    if (has_changed_files) {
-      for (const diagnostic of await get_diagnostics(root_path)) {
-        diagnostics.add(diagnostic);
-      }
+    return has_changed_files;
+  });
+  const results = await Promise.all(
+    paths_to_check.map((root_path) => get_diagnostics(root_path, ctx.use_pnpm))
+  );
+  for (const result of results) {
+    for (const diagnostic of result) {
+      diagnostics.add(diagnostic);
     }
   }
   core3.startGroup("Debug information");

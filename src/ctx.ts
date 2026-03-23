@@ -2,6 +2,7 @@ import * as github from '@actions/github';
 import * as core from '@actions/core';
 import picomatch from 'picomatch';
 import { join } from 'node:path';
+import { existsSync } from 'node:fs';
 
 export interface Config {
 	/**
@@ -44,6 +45,12 @@ export interface CTX {
 	 * The absolute path to the root of the repository on the actions fs
 	 */
 	repo_root: string;
+
+	/**
+	 * Whether pnpm should be used for running commands
+	 * (detected by the presence of pnpm-lock.yaml at the repo root)
+	 */
+	use_pnpm: boolean;
 
 	/**
 	 * The GitHub access token
@@ -105,11 +112,17 @@ export function get_ctx(): CTX {
 	const fail_on_warning = core.getBooleanInput('failOnWarning');
 	const fail_on_error = core.getBooleanInput('failOnError');
 
+	const use_pnpm = existsSync(join(repo_root, 'pnpm-lock.yaml'));
+	if (use_pnpm) {
+		console.log('Detected pnpm-lock.yaml, using pnpm exec for commands');
+	}
+
 	return {
 		token,
 		octokit,
 		pr_number,
 		repo_root,
+		use_pnpm,
 		repo: github.context.repo.repo,
 		owner: github.context.repo.owner,
 		config: {
