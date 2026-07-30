@@ -52,9 +52,24 @@ export async function get_diagnostics(cwd: string, use_pnpm = false, use_tsgo = 
 
 	const flags = ['--output=machine-verbose', ...(use_tsgo ? ['--tsgo'] : [])];
 
+	// Always the fork, never whatever the repo happens to call `svelte-check`.
+	//
+	// It is not interchangeable with upstream. `--tsgo` here drives the same overlay the Svelte
+	// language server uses, which resolves `.svelte` imports through a per-package shadow tree;
+	// upstream's `--tsgo` builds a different one that mis-resolves them, and because a failed
+	// `.svelte` resolution is absorbed by the ambient `declare module '*.svelte'` rather than
+	// raising TS2307, the result is not an error but a pile of downstream errors that look like
+	// inference failures. Measured on one real package: 0 errors from the classic engine, 100
+	// from upstream's --tsgo.
+	//
+	// Named explicitly rather than resolved from the workspace so this holds in a repo that has
+	// upstream svelte-check installed. The cost is fetching it per run instead of using an
+	// installed copy; pnpm/npm cache it, so it is a cache hit after the first.
+	const pkg = '@reintersect/svelte-check@4';
+
 	const [cmd, args] = use_pnpm
-		? ['pnpm', ['exec', 'svelte-check', ...flags]]
-		: ['npx', ['-y', 'svelte-check@4', ...flags]];
+		? ['pnpm', ['dlx', pkg, ...flags]]
+		: ['npx', ['-y', pkg, ...flags]];
 
 	const result = await exec(cmd, args, {
 		shell: true,

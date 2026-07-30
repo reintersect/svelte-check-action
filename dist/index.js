@@ -29625,7 +29625,8 @@ var diagnosticSchema = z.object({
 async function get_diagnostics(cwd, use_pnpm = false, use_tsgo = false) {
   await try_run_svelte_kit_sync(cwd, use_pnpm);
   const flags = ["--output=machine-verbose", ...use_tsgo ? ["--tsgo"] : []];
-  const [cmd, args] = use_pnpm ? ["pnpm", ["exec", "svelte-check", ...flags]] : ["npx", ["-y", "svelte-check@4", ...flags]];
+  const pkg = "@reintersect/svelte-check@4";
+  const [cmd, args] = use_pnpm ? ["pnpm", ["dlx", pkg, ...flags]] : ["npx", ["-y", pkg, ...flags]];
   const result = await dist_default2(cmd, args, {
     shell: true,
     cwd
