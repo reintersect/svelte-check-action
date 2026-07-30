@@ -33,6 +33,12 @@ export interface Config {
 	 * The filter to check when finding errors
 	 */
 	fail_filter: picomatch.Matcher;
+
+	/**
+	 * Hand TypeScript diagnostics to tsgo instead of the TypeScript JS API.
+	 * @default false
+	 */
+	use_tsgo: boolean;
 }
 
 export interface CTX {
@@ -111,6 +117,7 @@ export function get_ctx(): CTX {
 	const fail_filter = picomatch(core.getMultilineInput('failFilter'));
 	const fail_on_warning = core.getBooleanInput('failOnWarning');
 	const fail_on_error = core.getBooleanInput('failOnError');
+	const use_tsgo = core.getBooleanInput('tsgo');
 
 	const use_pnpm = existsSync(join(repo_root, 'pnpm-lock.yaml'));
 	if (use_pnpm) {
@@ -131,6 +138,7 @@ export function get_ctx(): CTX {
 			fail_on_warning,
 			fail_on_error,
 			fail_filter,
+			use_tsgo,
 		},
 	};
 }

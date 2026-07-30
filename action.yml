@@ -15,6 +15,10 @@ inputs:
         description: 'When enabled only the files that change in the pull request will be checked. If a list of globs is provided, we will only apply this filtering to files matching the globs'
         required: false
         default: 'true'
+    tsgo:
+        description: 'Use tsgo for svelte-check TypeScript diagnostics. Requires svelte-check >= 4.4 and writes transpiled Svelte files to disk (.svelte-kit if present, else .svelte-check).'
+        required: false
+        default: 'false'
     failOnError:
         description: 'Should we cause CI to fail if there is a Svelte Check error?'
         required: false

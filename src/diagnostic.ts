@@ -44,14 +44,17 @@ export interface Diagnostic extends Omit<RawDiagnostic, 'filename'> {
  * Run svelte-check at a given directory and return all the issues it finds
  * @param cwd The directory to run svelte-check in
  * @param use_pnpm Whether to use pnpm exec instead of npx
+ * @param use_tsgo Whether to hand TypeScript diagnostics to tsgo
  * @returns Diagnostics
  */
-export async function get_diagnostics(cwd: string, use_pnpm = false) {
+export async function get_diagnostics(cwd: string, use_pnpm = false, use_tsgo = false) {
 	await try_run_svelte_kit_sync(cwd, use_pnpm);
 
+	const flags = ['--output=machine-verbose', ...(use_tsgo ? ['--tsgo'] : [])];
+
 	const [cmd, args] = use_pnpm
-		? ['pnpm', ['exec', 'svelte-check', '--output=machine-verbose']]
-		: ['npx', ['-y', 'svelte-check@4', '--output=machine-verbose']];
+		? ['pnpm', ['exec', 'svelte-check', ...flags]]
+		: ['npx', ['-y', 'svelte-check@4', ...flags]];
 
 	const result = await exec(cmd, args, {
 		shell: true,

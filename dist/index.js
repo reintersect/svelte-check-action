@@ -29622,9 +29622,10 @@ var diagnosticSchema = z.object({
   code: z.union([z.number(), z.string()]).optional(),
   source: z.string().optional()
 });
-async function get_diagnostics(cwd, use_pnpm = false) {
+async function get_diagnostics(cwd, use_pnpm = false, use_tsgo = false) {
   await try_run_svelte_kit_sync(cwd, use_pnpm);
-  const [cmd, args] = use_pnpm ? ["pnpm", ["exec", "svelte-check", "--output=machine-verbose"]] : ["npx", ["-y", "svelte-check@4", "--output=machine-verbose"]];
+  const flags = ["--output=machine-verbose", ...use_tsgo ? ["--tsgo"] : []];
+  const [cmd, args] = use_pnpm ? ["pnpm", ["exec", "svelte-check", ...flags]] : ["npx", ["-y", "svelte-check@4", ...flags]];
   const result = await dist_default2(cmd, args, {
     shell: true,
     cwd
@@ -29750,6 +29751,7 @@ function get_ctx() {
   const fail_filter = (0, import_picomatch.default)(core2.getMultilineInput("failFilter"));
   const fail_on_warning = core2.getBooleanInput("failOnWarning");
   const fail_on_error = core2.getBooleanInput("failOnError");
+  const use_tsgo = core2.getBooleanInput("tsgo");
   const use_pnpm = (0, import_node_fs2.existsSync)((0, import_node_path3.join)(repo_root, "pnpm-lock.yaml"));
   if (use_pnpm) {
     console.log("Detected pnpm-lock.yaml, using pnpm exec for commands");
@@ -29767,7 +29769,8 @@ function get_ctx() {
       filter_changes,
       fail_on_warning,
       fail_on_error,
-      fail_filter
+      fail_filter,
+      use_tsgo
     }
   };
 }
@@ -31445,7 +31448,7 @@ async function main() {
     return has_changed_files;
   });
   const results = await Promise.all(
-    paths_to_check.map((root_path) => get_diagnostics(root_path, ctx.use_pnpm))
+    paths_to_check.map((root_path) => get_diagnostics(root_path, ctx.use_pnpm, ctx.config.use_tsgo))
   );
   for (const result of results) {
     for (const diagnostic of result) {
