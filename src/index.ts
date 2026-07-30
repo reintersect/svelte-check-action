@@ -55,7 +55,7 @@ async function main() {
 	});
 
 	const results = await Promise.all(
-		paths_to_check.map((root_path) => get_diagnostics(root_path, ctx.use_pnpm)),
+		paths_to_check.map((root_path) => get_diagnostics(root_path, ctx.use_pnpm, ctx.config.use_tsgo)),
 	);
 
 	for (const result of results) {
