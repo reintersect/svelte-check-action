@@ -16,7 +16,7 @@ inputs:
         required: false
         default: 'true'
     tsgo:
-        description: 'Use tsgo (TypeScript 7, native) for svelte-check TypeScript diagnostics. Requires a tsconfig/jsconfig and either @reintersect/effect-tsgo or @typescript/native-preview in the workspace. Writes generated files to a .svelte-ls-overlay directory in each package that has components; each one gitignores itself.'
+        description: 'Use tsgo (TypeScript 7, native) for svelte-check TypeScript diagnostics. Requires a tsconfig/jsconfig and either @reintersect/effect-tsgo or @typescript/native-preview in the workspace. Writes generated files to node_modules/.cache/svelte-lsp in each package that has components.'
         required: false
         default: 'false'
     failOnError:

@@ -65,7 +65,7 @@ export async function get_diagnostics(cwd: string, use_pnpm = false, use_tsgo = 
 	// Named explicitly rather than resolved from the workspace so this holds in a repo that has
 	// upstream svelte-check installed. The cost is fetching it per run instead of using an
 	// installed copy; pnpm/npm cache it, so it is a cache hit after the first.
-	const pkg = '@reintersect/svelte-check@4';
+	const pkg = '@reintersect/svelte-check@^4.8.0';
 
 	const [cmd, args] = use_pnpm
 		? ['pnpm', ['dlx', pkg, ...flags]]
