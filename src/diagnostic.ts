@@ -94,6 +94,7 @@ export async function get_diagnostics(cwd: string, use_pnpm = false, use_tsgo = 
 
 		try {
 			const raw = JSON.parse(tail);
+			if (raw.type === 'FILE') continue;
 			const { filename, ...diagnostic } = diagnosticSchema.parse(raw);
 
 			diagnostics.push({

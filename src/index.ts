@@ -54,12 +54,8 @@ async function main() {
 		return has_changed_files;
 	});
 
-	const results = await Promise.all(
-		paths_to_check.map((root_path) => get_diagnostics(root_path, ctx.use_pnpm, ctx.config.use_tsgo)),
-	);
-
-	for (const result of results) {
-		for (const diagnostic of result) {
+	for (const root_path of paths_to_check) {
+		for (const diagnostic of await get_diagnostics(root_path, ctx.use_pnpm, ctx.config.use_tsgo)) {
 			diagnostics.add(diagnostic);
 		}
 	}
